@@ -1,5 +1,6 @@
 import sys
 import os
+import json
 
 from modelcluster.models import ClusterableModel
 
@@ -12,6 +13,7 @@ from django.contrib.auth.models import Group
 from django.conf import settings
 from django.template.response import TemplateResponse
 from django.utils.translation import ugettext_lazy as _
+from django.core.serializers.json import DjangoJSONEncoder
 
 from wagtail.wagtailcore.util import camelcase_to_underscore
 
@@ -310,7 +312,27 @@ class Page(MP_Node, ClusterableModel, Indexed):
                 raise Http404
 
     def save_revision(self, user=None, submitted_for_moderation=False):
-        self.revisions.create(content_json=self.to_json(), user=user, submitted_for_moderation=submitted_for_moderation)
+        #
+        # Note to Torchbox folks: this is a quick attemtpt to explore 
+        # whether getting the saving of drafts to work with 
+        # modeltranslation was a quick fix. This helped until mixing it 
+        # with publishing. That is where I last touched the 
+        # modeltranslation approach.
+        #
+        # # We want to remove language specific fields.
+        # # First get a copy of the object with only the fields 
+        # # that would have been saved otherwise.
+        # serialized_data = self.to_json()
+        # has_lang_specific = json.loads(serialized_data)
+        # no_lang_specific = {}
+        # # Remove language spacific fields.
+        # for key in has_lang_specific:
+        #     if not key.endswith("_en") and not key.endswith("_es"):
+        #         no_lang_specific[key] = has_lang_specific[key]
+        # # Seralize for saving.
+        # serialized_data = json.dumps(no_lang_specific, cls=DjangoJSONEncoder)
+
+        self.revisions.create(content_json=serialized_data, user=user, submitted_for_moderation=submitted_for_moderation)
 
     def get_latest_revision(self):
         try:

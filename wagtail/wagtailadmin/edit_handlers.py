@@ -17,6 +17,8 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy
+from django.conf import settings
+from django.utils.translation import get_language
 
 from wagtail.wagtailcore.models import Page
 from wagtail.wagtailcore.util import camelcase_to_underscore
@@ -358,12 +360,47 @@ class EditHandler(object):
         Helper function: render all of the fields of the form that are not accounted for
         in rendered_fields
         """
+
+
+
+        #
+        # Don't include any language specific fields.
+        #
+        # rendered_fields = self.rendered_fields()
+        # missing_fields_html = []
+        # for field_name in self.form.fields:
+        #     if field_name not in rendered_fields:
+        #         if not field_name.endswith("_en") and not field_name.endswith("_es"):
+        #             missing_fields_html.append(unicode(self.form[field_name]))
+
+
+
+
+        #
+        # Don't include fields specific to the current language.
+        #
         rendered_fields = self.rendered_fields()
-        missing_fields_html = [
-            unicode(self.form[field_name])
-            for field_name in self.form.fields
-            if field_name not in rendered_fields
-        ]
+        missing_fields_html = []
+        for field_name in self.form.fields:
+
+            if field_name not in rendered_fields:
+                # Don't add extra fields for current language as the default field will
+                # read/write the current languages version of the field.
+                if not field_name.endswith("_" + get_language()):
+                    # Make all other language modeltranslation fields hidden.
+                    # 
+                    # TODO: generalize this by checking if field_name ends in any of the 
+                    #       available languages other than the current lanugage.
+                    # 
+                    missing_fields_html.append(unicode(self.form[field_name].as_hidden()))
+                
+                    
+        # missing_fields_html = [
+        #     unicode(self.form[field_name])
+        #     for field_name in self.form.fields
+        #     if field_name not in rendered_fields and not field_name.endswith("_" + LANGUAGE_CODE)
+        #     #if field_name not in rendered_fields
+        # ]
 
         return mark_safe(u''.join(missing_fields_html))
 

@@ -227,6 +227,7 @@ def edit(request, page_id):
     errors_debug = None
 
     if request.POST:
+
         form = form_class(request.POST, request.FILES, instance=page)
 
         if form.is_valid():

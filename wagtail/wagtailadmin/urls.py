@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import patterns, url, include
 from django.conf import settings
 
 from wagtail.wagtailadmin.forms import LoginForm, PasswordResetForm
@@ -6,6 +6,7 @@ from wagtail.wagtailadmin.forms import LoginForm, PasswordResetForm
 
 urlpatterns = patterns(
     'django.contrib.auth.views',
+    (r'^i18n/', include('django.conf.urls.i18n')),
     url(
         r'^login/$', 'login', {
             'template_name': 'wagtailadmin/login.html',
